@@ -1,8 +1,12 @@
-import { useRef, useState } from "react";
-import { Button } from "@/src/components/ui/button";
+import { useCallback } from "react";
+import { useDropzone } from "@uploadthing/react";
+import {
+	generateClientDropzoneAccept,
+	generatePermittedFileTypes,
+} from "uploadthing/client";
 import { Spinner } from "@/src/components/ui/spinner";
 import { useUploadThing } from "@/src/lib/uploadthing";
-import { ImagePlusIcon } from "lucide-react";
+import { ImagePlusIcon, UploadCloudIcon } from "lucide-react";
 import { cn } from "@/src/lib/utils";
 
 interface UploadButtonProps {
@@ -20,14 +24,10 @@ export function UploadButton({
 	onUploadBegin,
 	className,
 }: UploadButtonProps) {
-	const inputRef = useRef<HTMLInputElement>(null);
-	const [isUploading, setIsUploading] = useState(false);
-
-	const { startUpload, isUploading: uploadThingIsUploading } = useUploadThing(
+	const { startUpload, isUploading, routeConfig } = useUploadThing(
 		"imageUploader",
 		{
 			onClientUploadComplete: (res) => {
-				setIsUploading(false);
 				if (onUploadComplete && res) {
 					onUploadComplete(
 						res.map((file) => ({
@@ -39,7 +39,6 @@ export function UploadButton({
 				}
 			},
 			onUploadError: (error) => {
-				setIsUploading(false);
 				if (onUploadError) {
 					onUploadError(error);
 				}
@@ -52,62 +51,58 @@ export function UploadButton({
 		},
 	);
 
-	const handleClick = () => {
-		inputRef.current?.click();
-	};
-
-	const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
-		const files = e.target.files;
-		if (!files || files.length === 0) return;
-
-		setIsUploading(true);
-
-		try {
-			await startUpload(Array.from(files));
-		} catch (error) {
-			setIsUploading(false);
-			if (onUploadError && error instanceof Error) {
-				onUploadError(error);
+	const onDrop = useCallback(
+		(acceptedFiles: File[]) => {
+			// Auto-upload when files are selected
+			if (acceptedFiles.length > 0) {
+				startUpload(acceptedFiles);
 			}
-		}
+		},
+		[startUpload],
+	);
 
-		// Reset the input so the same file can be selected again
-		if (inputRef.current) {
-			inputRef.current.value = "";
-		}
-	};
-
-	const uploading = isUploading || uploadThingIsUploading;
+	const { getRootProps, getInputProps, isDragActive } = useDropzone({
+		onDrop,
+		accept: routeConfig
+			? generateClientDropzoneAccept(
+					generatePermittedFileTypes(routeConfig).fileTypes,
+				)
+			: { "image/*": [] },
+	});
 
 	return (
-		<>
-			<input
-				ref={inputRef}
-				type="file"
-				accept="image/*"
-				multiple
-				onChange={handleFileChange}
-				className="hidden"
-				// capture attribute removed to allow both camera AND gallery on mobile
-				// If you want camera-only, add: capture="environment"
-			/>
-			<Button
-				onClick={handleClick}
-				disabled={uploading}
-				className={cn("gap-2", className)}
-			>
-				{uploading ? (
-					<>
-						<Spinner className="size-4" />
-						Uploading...
-					</>
-				) : (
-					<>
-						<ImagePlusIcon className="size-4" />
-						Upload Images
-					</>
-				)}
-			</Button>
-		</>
+		<div
+			{...getRootProps()}
+			className={cn(
+				"flex flex-col items-center justify-center gap-2 p-6 border-2 border-dashed rounded-lg cursor-pointer transition-colors",
+				isDragActive
+					? "border-primary bg-primary/5"
+					: "border-muted-foreground/25 hover:border-primary/50 hover:bg-muted/50",
+				isUploading && "opacity-50 pointer-events-none",
+				className,
+			)}
+		>
+			<input {...getInputProps()} />
+			{isUploading ? (
+				<>
+					<Spinner className="size-8 text-primary" />
+					<p className="text-sm text-muted-foreground">Uploading...</p>
+				</>
+			) : isDragActive ? (
+				<>
+					<UploadCloudIcon className="size-8 text-primary" />
+					<p className="text-sm text-primary font-medium">Drop images here</p>
+				</>
+			) : (
+				<>
+					<ImagePlusIcon className="size-8 text-muted-foreground" />
+					<p className="text-sm text-muted-foreground">
+						<span className="font-medium text-primary">Click to upload</span> or
+						drag and drop
+					</p>
+					<p className="text-xs text-muted-foreground">Images up to 4MB</p>
+				</>
+			)}
+		</div>
 	);
 }
