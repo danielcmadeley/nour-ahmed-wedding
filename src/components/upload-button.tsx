@@ -82,7 +82,8 @@ export function UploadButton({
 				className,
 			)}
 		>
-			<input {...getInputProps()} />
+			{/* Explicitly set accept="image/*" to trigger native mobile image picker */}
+			<input {...getInputProps()} accept="image/*" />
 			{isUploading ? (
 				<>
 					<Spinner className="size-8 text-primary" />
