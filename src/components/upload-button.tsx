@@ -82,8 +82,15 @@ export function UploadButton({
 				className,
 			)}
 		>
-			{/* Explicitly set accept="image/*" to trigger native mobile image picker */}
-			<input {...getInputProps()} accept="image/*" />
+			{/* 
+			  Use specific MIME types for better Android compatibility.
+			  Android Chrome often shows Drive/Files with "image/*" but shows 
+			  the proper gallery picker with explicit MIME types.
+			*/}
+			<input
+				{...getInputProps()}
+				accept="image/jpeg,image/png,image/gif,image/webp,image/heic,image/heif"
+			/>
 			{isUploading ? (
 				<>
 					<Spinner className="size-8 text-primary" />
