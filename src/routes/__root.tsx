@@ -7,6 +7,7 @@ import {
 	Scripts,
 } from "@tanstack/react-router";
 import { QueryClientProvider } from "@tanstack/react-query";
+import { InAppBrowserBanner } from "@/src/components/in-app-browser-banner";
 import { Toaster } from "@/src/components/ui/sonner";
 import { queryClient } from "@/src/lib/query-client";
 import "../styles/app.css";
@@ -47,6 +48,7 @@ function RootDocument({ children }: Readonly<{ children: ReactNode }>) {
 				<HeadContent />
 			</head>
 			<body suppressHydrationWarning>
+				<InAppBrowserBanner />
 				{children}
 				<Toaster />
 				<Scripts />
