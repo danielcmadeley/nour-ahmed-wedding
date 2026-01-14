@@ -1,12 +1,12 @@
-import { useCallback, useState } from "react";
-import { createFileRoute } from "@tanstack/react-router";
-import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { toast } from "sonner";
+import { Gallery } from "@/src/components/gallery";
 import { Badge } from "@/src/components/ui/badge";
 import { Separator } from "@/src/components/ui/separator";
-import { Gallery } from "@/src/components/gallery";
-import { UploadButton } from "@/src/lib/uploadthing";
+import { UploadButton } from "@/src/components/upload-button";
 import { deleteImages, fetchImages } from "@/src/lib/api/images";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { createFileRoute } from "@tanstack/react-router";
+import { useCallback, useState } from "react";
+import { toast } from "sonner";
 
 export const Route = createFileRoute("/")({
 	component: Home,
@@ -96,8 +96,7 @@ function Home() {
 					Upload images to add them to your gallery
 				</p>
 				<UploadButton
-					endpoint="imageUploader"
-					onClientUploadComplete={handleUploadComplete}
+					onUploadComplete={handleUploadComplete}
 					onUploadError={handleUploadError}
 					onUploadBegin={handleUploadBegin}
 				/>
