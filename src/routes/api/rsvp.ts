@@ -1,46 +1,56 @@
-import { existsSync } from "node:fs";
-import { mkdir, readFile, writeFile } from "node:fs/promises";
-import { join } from "node:path";
 import { createFileRoute } from "@tanstack/react-router";
+import { Redis } from "@upstash/redis";
 import {
 	type RsvpEntry,
 	type RsvpResponse,
 	rsvpSchema,
 } from "@/src/types/rsvp";
 
-const DATA_DIR = join(process.cwd(), "data");
-const RSVP_FILE = join(DATA_DIR, "rsvp.json");
+const redisUrl = process.env.KV_REST_API_URL;
+const redisToken = process.env.KV_REST_API_TOKEN;
 
-async function ensureDataDir() {
-	if (!existsSync(DATA_DIR)) {
-		await mkdir(DATA_DIR, { recursive: true });
-	}
-}
+const redis = new Redis({
+	url: redisUrl ?? "",
+	token: redisToken ?? "",
+});
+const RSVP_KEY = "rsvp:guests";
 
 async function readRsvpData(): Promise<RsvpResponse> {
-	await ensureDataDir();
-	try {
-		const data = await readFile(RSVP_FILE, "utf-8");
-		return JSON.parse(data);
-	} catch {
-		return { guests: [] };
-	}
+	const data = await redis.get<RsvpResponse>(RSVP_KEY);
+	return data ?? { guests: [] };
 }
 
 async function writeRsvpData(data: RsvpResponse): Promise<void> {
-	await ensureDataDir();
-	await writeFile(RSVP_FILE, JSON.stringify(data, null, 2), "utf-8");
+	await redis.set(RSVP_KEY, data);
 }
 
 export const Route = createFileRoute("/api/rsvp")({
 	server: {
 		handlers: {
 			GET: async () => {
+				if (!redisUrl || !redisToken) {
+					return Response.json(
+						{
+							message: "KV_REST_API_URL and KV_REST_API_TOKEN are required",
+						},
+						{ status: 500 },
+					);
+				}
+
 				const data = await readRsvpData();
 				return Response.json(data);
 			},
 			POST: async ({ request }) => {
 				try {
+					if (!redisUrl || !redisToken) {
+						return Response.json(
+							{
+								message: "KV_REST_API_URL and KV_REST_API_TOKEN are required",
+							},
+							{ status: 500 },
+						);
+					}
+
 					const body = await request.json();
 					const validated = rsvpSchema.parse(body);
 
