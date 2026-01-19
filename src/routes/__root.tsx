@@ -8,6 +8,7 @@ import {
 	Scripts,
 } from "@tanstack/react-router";
 import type { ReactNode } from "react";
+import { PWAPrompt } from "@/src/components/pwa-prompt";
 import { ThemeProvider } from "@/src/components/theme-provider";
 import { Toaster } from "@/src/components/ui/sonner";
 import { queryClient } from "@/src/lib/query-client";
@@ -21,10 +22,47 @@ export const Route = createRootRoute({
 			},
 			{
 				name: "viewport",
-				content: "width=device-width, initial-scale=1",
+				content:
+					"width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no",
 			},
 			{
 				title: "Wedding Gallery",
+			},
+			{
+				name: "description",
+				content: "Wedding photo gallery with upload and sharing capabilities",
+			},
+			{
+				name: "theme-color",
+				content: "#ffffff",
+			},
+			{
+				name: "apple-mobile-web-app-capable",
+				content: "yes",
+			},
+			{
+				name: "apple-mobile-web-app-status-bar-style",
+				content: "default",
+			},
+			{
+				name: "apple-mobile-web-app-title",
+				content: "Wedding Gallery",
+			},
+		],
+		links: [
+			{
+				rel: "icon",
+				type: "image/x-icon",
+				href: "/favicon.ico",
+			},
+			{
+				rel: "apple-touch-icon",
+				href: "/apple-touch-icon.png",
+			},
+			{
+				rel: "mask-icon",
+				href: "/mask-icon.svg",
+				color: "#000000",
 			},
 		],
 	}),
@@ -56,6 +94,7 @@ function RootDocument({ children }: Readonly<{ children: ReactNode }>) {
 			>
 				{children}
 				<Toaster />
+				<PWAPrompt />
 				<Scripts />
 			</body>
 		</html>
