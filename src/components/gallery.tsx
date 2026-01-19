@@ -43,6 +43,7 @@ import {
 	DownloadIcon,
 	ImageIcon,
 	Trash2Icon,
+	XIcon,
 } from "lucide-react";
 import {
 	useCallback,
@@ -181,6 +182,7 @@ function ImageViewer({
 			<DialogContent
 				className="fixed inset-0 top-0 left-0 right-0 bottom-0 translate-x-0 translate-y-0 max-w-none w-screen h-screen max-h-screen p-0 m-0 rounded-none border-0"
 				style={dialogFullscreenStyle}
+				showCloseButton={false}
 				onTouchStart={handleTouchStart}
 				onTouchMove={handleTouchMove}
 				onTouchEnd={handleTouchEnd}
@@ -214,14 +216,18 @@ function ImageViewer({
 						</>
 					)}
 
-					{/* Top toolbar with title and actions - pr-12 leaves space for the X close button */}
-					<div className="absolute top-0 left-0 right-0 bg-black/60 text-white p-3 sm:p-4 pr-12 sm:pr-14 z-10 safe-area-top">
+					{/* Top toolbar with title and actions */}
+					<div className="absolute top-0 left-0 right-0 bg-black/60 text-white p-3 sm:p-4 z-10 safe-area-top">
 						<div className="flex items-center justify-between gap-2">
 							<div className="flex-1 min-w-0">
-								<p className="font-medium truncate text-sm sm:text-base">{currentImage.name}</p>
+								<p className="font-medium truncate text-sm sm:text-base">
+									{currentImage.name}
+								</p>
 								<div className="flex items-center gap-2 text-xs sm:text-sm text-white/80">
 									{images.length > 1 && (
-										<span>{currentIndex + 1} / {images.length}</span>
+										<span>
+											{currentIndex + 1} / {images.length}
+										</span>
 									)}
 									{currentImage.size && (
 										<span>{formatFileSizeMB(currentImage.size)}</span>
@@ -292,6 +298,14 @@ function ImageViewer({
 										</AlertDialogContent>
 									</AlertDialog>
 								)}
+								<button
+									type="button"
+									onClick={onClose}
+									className="h-8 w-8 rounded-md bg-white/10 hover:bg-white/20 flex items-center justify-center transition-colors"
+									aria-label="Close"
+								>
+									<XIcon className="size-5" />
+								</button>
 							</div>
 						</div>
 					</div>
