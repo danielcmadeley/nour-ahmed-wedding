@@ -3,7 +3,7 @@ import { createUploadthing, UploadThingError } from "uploadthing/server";
 
 const f = createUploadthing();
 
-function auth(req: Request) {
+function auth(_req: Request) {
 	// TODO: Replace with actual authentication logic
 	return { id: "fakeId" };
 }

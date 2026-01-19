@@ -1,0 +1,7 @@
+{
+	"permissions": {
+		"allow": ["Bash(bun run dev)", "Bash(bunx @biomejs/biome check:*)"],
+		"deny": [],
+		"ask": []
+	}
+}

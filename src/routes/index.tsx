@@ -1,12 +1,12 @@
-import { Gallery } from "@/src/components/gallery";
-import { Badge } from "@/src/components/ui/badge";
-import { Separator } from "@/src/components/ui/separator";
-import { UploadButton } from "@/src/components/upload-button";
-import { deleteImages, fetchImages } from "@/src/lib/api/images";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { createFileRoute } from "@tanstack/react-router";
-import { useCallback, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { toast } from "sonner";
+import { Gallery } from "@/src/components/gallery";
+import { ThemeToggle } from "@/src/components/theme-toggle";
+import { UploadButton } from "@/src/components/upload-button";
+import { deleteImages, fetchImages } from "@/src/lib/api/images";
+import { QUERY_KEYS, STORAGE_KEYS } from "@/src/lib/constants";
 
 export const Route = createFileRoute("/")({
 	component: Home,
@@ -15,7 +15,6 @@ export const Route = createFileRoute("/")({
 function Home() {
 	const queryClient = useQueryClient();
 	const [uploadingImages, setUploadingImages] = useState<string[]>([]);
-	const IMAGES_QUERY_KEY = ["images"] as const;
 
 	const {
 		data: images = [],
@@ -23,15 +22,29 @@ function Home() {
 		isFetching,
 		error,
 	} = useQuery({
-		queryKey: IMAGES_QUERY_KEY,
+		queryKey: QUERY_KEYS.IMAGES,
 		queryFn: fetchImages,
-		placeholderData: (previousData) => previousData, // Keep previous data while refetching
+		placeholderData: (previousData) => previousData,
 	});
+
+	// Persist image count to localStorage for skeleton loading
+	useEffect(() => {
+		if (images.length > 0 && !isLoading) {
+			try {
+				localStorage.setItem(
+					STORAGE_KEYS.GALLERY_IMAGE_COUNT,
+					String(images.length),
+				);
+			} catch (_e) {
+				// Ignore localStorage errors
+			}
+		}
+	}, [images.length, isLoading]);
 
 	const deleteMutation = useMutation({
 		mutationFn: deleteImages,
 		onSuccess: (_, keys) => {
-			queryClient.invalidateQueries({ queryKey: IMAGES_QUERY_KEY });
+			queryClient.invalidateQueries({ queryKey: QUERY_KEYS.IMAGES });
 			const count = keys.length;
 			toast.success(
 				count === 1
@@ -66,18 +79,18 @@ function Home() {
 	}, []);
 
 	const handleUploadComplete = useCallback(
-		(uploaded) => {
-			queryClient.invalidateQueries({ queryKey: IMAGES_QUERY_KEY });
+		(uploaded: Array<{ name: string; url: string; key: string }>) => {
+			queryClient.invalidateQueries({ queryKey: QUERY_KEYS.IMAGES });
 			const fileCount = uploaded.length;
-			const fileNames = uploaded.map((file: { name: string }) => file.name);
+			const fileNames = uploaded.map((file) => file.name);
 
 			setUploadingImages((prev) =>
 				prev.filter((name) => !fileNames.includes(name)),
 			);
 
-			fileNames.forEach((name: string) => {
+			for (const name of fileNames) {
 				toast.dismiss(`upload-${name}`);
-			});
+			}
 
 			toast.success(
 				fileCount === 1
@@ -85,37 +98,47 @@ function Home() {
 					: `${fileCount} images uploaded successfully`,
 			);
 		},
-		[IMAGES_QUERY_KEY, queryClient],
+		[queryClient],
 	);
 
 	return (
-		<div className="p-8 space-y-8">
-			<div>
-				<h1 className="text-3xl font-bold mb-2">Image Gallery</h1>
-				<p className="text-muted-foreground mb-6">
-					Upload images to add them to your gallery
-				</p>
-				<UploadButton
-					onUploadComplete={handleUploadComplete}
-					onUploadError={handleUploadError}
-					onUploadBegin={handleUploadBegin}
-				/>
-			</div>
-
-			<Separator />
-
-			<div>
-				<div className="flex items-center gap-3 mb-4">
-					<h2 className="text-2xl font-semibold">Gallery</h2>
-					<Badge variant="secondary">
-						{isLoading
-							? "Loading..."
-							: `${images.length} image${images.length !== 1 ? "s" : ""}`}
-					</Badge>
+		<div className="min-h-screen bg-gradient-to-b from-neutral-50 to-neutral-100 dark:from-neutral-950 dark:to-neutral-900">
+			{/* Header */}
+			<header className="sticky top-0 z-50 w-full border-b border-neutral-200 dark:border-neutral-800 bg-white/80 dark:bg-neutral-950/80 backdrop-blur-xl supports-[backdrop-filter]:bg-white/60 dark:supports-[backdrop-filter]:bg-neutral-950/60">
+				<div className="container mx-auto px-4 sm:px-6 lg:px-8 max-w-7xl">
+					<div className="flex h-16 items-center justify-between">
+						<div className="flex items-center gap-3">
+							<div className="size-8 rounded-lg bg-gradient-to-br from-neutral-900 to-neutral-700 dark:from-neutral-100 dark:to-neutral-300" />
+							<div>
+								<h1 className="text-lg font-semibold tracking-tight">
+									Wedding Gallery
+								</h1>
+								<p className="text-xs text-neutral-500 dark:text-neutral-400">
+									{isLoading
+										? "Loading..."
+										: `${images.length} photo${images.length !== 1 ? "s" : ""}`}
+								</p>
+							</div>
+						</div>
+						<div className="flex items-center gap-2">
+							<UploadButton
+								onUploadComplete={handleUploadComplete}
+								onUploadError={handleUploadError}
+								onUploadBegin={handleUploadBegin}
+							/>
+							<ThemeToggle />
+						</div>
+					</div>
 				</div>
+			</header>
+
+			{/* Main Content */}
+			<main className="container mx-auto px-4 sm:px-6 lg:px-8 max-w-7xl py-8 sm:py-12">
 				{error && (
-					<div className="text-destructive mb-4">
-						Error loading images: {error.message}
+					<div className="mb-8 rounded-lg border border-red-200 dark:border-red-900 bg-red-50 dark:bg-red-950/50 p-4">
+						<p className="text-sm text-red-800 dark:text-red-200">
+							Error loading images: {error.message}
+						</p>
 					</div>
 				)}
 				<Gallery
@@ -125,7 +148,7 @@ function Home() {
 					uploadingImages={uploadingImages}
 					onDelete={handleDelete}
 				/>
-			</div>
+			</main>
 		</div>
 	);
 }

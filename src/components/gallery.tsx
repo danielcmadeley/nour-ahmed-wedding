@@ -1,4 +1,11 @@
 import {
+	ChevronLeftIcon,
+	ChevronRightIcon,
+	ImageIcon,
+	Trash2Icon,
+} from "lucide-react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import {
 	AlertDialog,
 	AlertDialogAction,
 	AlertDialogCancel,
@@ -11,7 +18,7 @@ import {
 } from "@/src/components/ui/alert-dialog";
 import { AspectRatio } from "@/src/components/ui/aspect-ratio";
 import { Button } from "@/src/components/ui/button";
-import { Card, CardContent } from "@/src/components/ui/card";
+import { CardContent } from "@/src/components/ui/card";
 import { Checkbox } from "@/src/components/ui/checkbox";
 import {
 	Dialog,
@@ -28,16 +35,10 @@ import {
 } from "@/src/components/ui/empty";
 import { Skeleton } from "@/src/components/ui/skeleton";
 import { Spinner } from "@/src/components/ui/spinner";
+import { STORAGE_KEYS } from "@/src/lib/constants";
 import { cn } from "@/src/lib/utils";
 import { formatFileSizeMB } from "@/src/lib/utils/format";
 import type { GalleryImage } from "@/src/types/gallery";
-import {
-	ChevronLeftIcon,
-	ChevronRightIcon,
-	ImageIcon,
-	Trash2Icon,
-} from "lucide-react";
-import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 
 const dialogFullscreenStyle: React.CSSProperties = {
 	position: "fixed",
@@ -303,11 +304,16 @@ function GalleryItem({
 
 	return (
 		<>
-			<Card
+			<div
+				data-slot="card"
 				className={cn(
-					"relative overflow-hidden group transition-all",
-					selectionMode ? "cursor-pointer" : "cursor-pointer hover:shadow-md",
-					isSelected && "ring-2 ring-primary ring-offset-2",
+					"bg-card text-card-foreground rounded-xl border shadow-sm",
+					"relative overflow-hidden group transition-all border-neutral-200 dark:border-neutral-800 p-0",
+					selectionMode
+						? "cursor-pointer"
+						: "cursor-pointer hover:shadow-lg hover:border-neutral-300 dark:hover:border-neutral-700",
+					isSelected &&
+						"ring-2 ring-neutral-900 dark:ring-neutral-100 ring-offset-2 ring-offset-neutral-50 dark:ring-offset-neutral-950",
 				)}
 				onClick={selectionMode ? handleCardClick : () => setIsDialogOpen(true)}
 			>
@@ -325,7 +331,10 @@ function GalleryItem({
 					</div>
 				)}
 				<CardContent className="p-0">
-					<AspectRatio ratio={1} className="overflow-hidden">
+					<AspectRatio
+						ratio={1}
+						className="overflow-hidden bg-neutral-100 dark:bg-neutral-900"
+					>
 						<img
 							src={image.url}
 							alt={image.name}
@@ -338,7 +347,7 @@ function GalleryItem({
 						/>
 					</AspectRatio>
 				</CardContent>
-			</Card>
+			</div>
 			<ImageViewer
 				images={allImages}
 				initialIndex={imageIndex}
@@ -351,26 +360,25 @@ function GalleryItem({
 }
 
 function GallerySkeleton({ count }: { count: number }) {
-	// Generate stable unique keys for skeleton items without using index
-	const skeletonKeys = useMemo(() => {
-		return Array.from(
-			{ length: count },
-			() => `skeleton-${crypto.randomUUID()}`,
-		);
-	}, [count]);
-
 	if (count === 0) return null;
 
 	return (
 		<>
-			{skeletonKeys.map((key) => (
-				<Card key={key} className="overflow-hidden">
+			{Array.from({ length: count }, (_, index) => (
+				<div
+					key={`skeleton-${index}`}
+					data-slot="card"
+					className="bg-card text-card-foreground rounded-xl border shadow-sm overflow-hidden border-neutral-200 dark:border-neutral-800 p-0"
+				>
 					<CardContent className="p-0">
-						<AspectRatio ratio={1}>
-							<Skeleton className="w-full h-full" />
+						<AspectRatio
+							ratio={1}
+							className="bg-neutral-100 dark:bg-neutral-900"
+						>
+							<Skeleton className="w-full h-full bg-neutral-200 dark:bg-neutral-800" />
 						</AspectRatio>
 					</CardContent>
-				</Card>
+				</div>
 			))}
 		</>
 	);
@@ -378,18 +386,24 @@ function GallerySkeleton({ count }: { count: number }) {
 
 function UploadingImagePlaceholder({ fileName }: { fileName: string }) {
 	return (
-		<Card className="overflow-hidden border-dashed">
+		<div
+			data-slot="card"
+			className="bg-card text-card-foreground rounded-xl border shadow-sm overflow-hidden border-dashed border-neutral-300 dark:border-neutral-700 p-0"
+		>
 			<CardContent className="p-0">
-				<AspectRatio ratio={1} className="relative">
-					<div className="absolute inset-0 flex flex-col items-center justify-center gap-2 bg-muted/50">
-						<Spinner className="size-8 text-muted-foreground" />
-						<p className="text-xs text-muted-foreground text-center px-2 truncate w-full">
+				<AspectRatio
+					ratio={1}
+					className="relative bg-neutral-100 dark:bg-neutral-900"
+				>
+					<div className="absolute inset-0 flex flex-col items-center justify-center gap-2 bg-neutral-50/80 dark:bg-neutral-950/80">
+						<Spinner className="size-8 text-neutral-600 dark:text-neutral-400" />
+						<p className="text-xs text-neutral-600 dark:text-neutral-400 text-center px-2 truncate w-full">
 							{fileName}
 						</p>
 					</div>
 				</AspectRatio>
 			</CardContent>
-		</Card>
+		</div>
 	);
 }
 
@@ -408,6 +422,17 @@ export function Gallery({
 	// Only show empty state if we have no content AND we're not loading/fetching AND not uploading
 	const shouldShowEmpty =
 		!hasContent && !isLoadingOrFetching && uploadingImages.length === 0;
+
+	// Get expected skeleton count from localStorage
+	const expectedImageCount = useMemo(() => {
+		if (typeof window === "undefined") return 0;
+		try {
+			const stored = localStorage.getItem(STORAGE_KEYS.GALLERY_IMAGE_COUNT);
+			return stored ? Number.parseInt(stored, 10) : 0;
+		} catch (_e) {
+			return 0;
+		}
+	}, []);
 
 	const handleSelect = (key: string, selected: boolean) => {
 		setSelectedKeys((prev) => {
@@ -436,27 +461,18 @@ export function Gallery({
 		}
 	};
 
-	// Show skeleton if we're loading/fetching and have no content yet (prevents empty flashes)
-	if (!hasContent && isLoadingOrFetching) {
-		return (
-			<div className={cn("space-y-4", className)}>
-				<div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
-					<GallerySkeleton count={8} />
-				</div>
-			</div>
-		);
-	}
-
 	// Only show empty state if we truly have no content and aren't loading/fetching/uploading
 	if (shouldShowEmpty) {
 		return (
 			<Empty className={className}>
 				<EmptyHeader>
 					<EmptyMedia variant="icon">
-						<ImageIcon />
+						<ImageIcon className="text-neutral-400 dark:text-neutral-600" />
 					</EmptyMedia>
-					<EmptyTitle>No images yet</EmptyTitle>
-					<EmptyDescription>
+					<EmptyTitle className="text-neutral-900 dark:text-neutral-100">
+						No images yet
+					</EmptyTitle>
+					<EmptyDescription className="text-neutral-600 dark:text-neutral-400">
 						Upload your first image to see it appear in the gallery.
 					</EmptyDescription>
 				</EmptyHeader>
@@ -465,12 +481,12 @@ export function Gallery({
 	}
 
 	return (
-		<div className={cn("space-y-4", className)}>
+		<div className={cn("space-y-6", className)}>
 			{hasContent && (
-				<div className="flex items-center justify-between mb-4">
+				<div className="flex items-center justify-between mb-6">
 					<div className="flex items-center gap-2">
 						{selectionMode && (
-							<span className="text-sm text-muted-foreground">
+							<span className="text-sm font-medium text-neutral-600 dark:text-neutral-400">
 								{selectedKeys.size} selected
 							</span>
 						)}
@@ -481,7 +497,7 @@ export function Gallery({
 								<AlertDialogTrigger asChild>
 									<Button variant="destructive" size="sm">
 										<Trash2Icon />
-										Delete Selected ({selectedKeys.size})
+										Delete ({selectedKeys.size})
 									</Button>
 								</AlertDialogTrigger>
 								<AlertDialogContent>
@@ -510,33 +526,34 @@ export function Gallery({
 							size="sm"
 							onClick={toggleSelectionMode}
 						>
-							{selectionMode ? "Cancel Selection" : "Select Images"}
+							{selectionMode ? "Cancel" : "Select"}
 						</Button>
 					</div>
 				</div>
 			)}
-			<div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
-				{isLoadingOrFetching && images.length > 0 && (
-					<GallerySkeleton count={images.length} />
-				)}
+			<div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-3 sm:gap-4">
 				{uploadingImages.map((fileName, index) => (
 					<UploadingImagePlaceholder
 						key={`uploading-${index}-${fileName}`}
 						fileName={fileName}
 					/>
 				))}
-				{images.map((image, index) => (
-					<GalleryItem
-						key={image.key}
-						image={image}
-						imageIndex={index}
-						allImages={images}
-						isSelected={selectedKeys.has(image.key)}
-						onSelect={handleSelect}
-						onDelete={onDelete}
-						selectionMode={selectionMode}
-					/>
-				))}
+				{isLoading && expectedImageCount > 0 ? (
+					<GallerySkeleton count={expectedImageCount} />
+				) : (
+					images.map((image, index) => (
+						<GalleryItem
+							key={image.key}
+							image={image}
+							imageIndex={index}
+							allImages={images}
+							isSelected={selectedKeys.has(image.key)}
+							onSelect={handleSelect}
+							onDelete={onDelete}
+							selectionMode={selectionMode}
+						/>
+					))
+				)}
 			</div>
 		</div>
 	);
