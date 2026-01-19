@@ -14,6 +14,7 @@ export function WaxSeal({
 }: WaxSealProps) {
 	const sealRef = useRef<SVGSVGElement>(null);
 	const fragmentsRef = useRef<SVGGElement>(null);
+	const roundValue = (value: number) => Math.round(value * 1000) / 1000;
 
 	useEffect(() => {
 		if (!isBreaking || !sealRef.current || !fragmentsRef.current) return;
@@ -113,10 +114,14 @@ export function WaxSeal({
 				<g ref={fragmentsRef} className="fragments">
 					{[...Array(8)].map((_, i) => {
 						const angle = (i / 8) * Math.PI * 2;
+						const startX = roundValue(70 + Math.cos(angle - 0.3) * 45);
+						const startY = roundValue(70 + Math.sin(angle - 0.3) * 45);
+						const endX = roundValue(70 + Math.cos(angle + 0.3) * 45);
+						const endY = roundValue(70 + Math.sin(angle + 0.3) * 45);
 						return (
 							<path
 								key={i}
-								d={`M70 70 L${70 + Math.cos(angle - 0.3) * 45} ${70 + Math.sin(angle - 0.3) * 45} A45 45 0 0 1 ${70 + Math.cos(angle + 0.3) * 45} ${70 + Math.sin(angle + 0.3) * 45} Z`}
+								d={`M70 70 L${startX} ${startY} A45 45 0 0 1 ${endX} ${endY} Z`}
 								fill="#8B0000"
 								opacity="0"
 							/>
@@ -191,8 +196,8 @@ export function WaxSeal({
 					{/* Decorative dots around the seal */}
 					{[...Array(12)].map((_, i) => {
 						const angle = (i / 12) * Math.PI * 2;
-						const cx = 70 + Math.cos(angle) * 48;
-						const cy = 70 + Math.sin(angle) * 48;
+						const cx = roundValue(70 + Math.cos(angle) * 48);
+						const cy = roundValue(70 + Math.sin(angle) * 48);
 						return (
 							<circle
 								key={i}

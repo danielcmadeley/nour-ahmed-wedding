@@ -1,4 +1,5 @@
 import { zodResolver } from "@hookform/resolvers/zod";
+import { useQueryClient } from "@tanstack/react-query";
 import { Check, Loader2, Send } from "lucide-react";
 import { useState } from "react";
 import { useForm } from "react-hook-form";
@@ -15,11 +16,13 @@ import {
 } from "@/src/components/ui/select";
 import { Textarea } from "@/src/components/ui/textarea";
 import { submitRsvp } from "@/src/lib/api/rsvp";
+import { QUERY_KEYS } from "@/src/lib/constants";
 import { type RsvpFormData, rsvpSchema } from "@/src/types/rsvp";
 
 export function RsvpForm() {
 	const [isSubmitting, setIsSubmitting] = useState(false);
 	const [isSubmitted, setIsSubmitted] = useState(false);
+	const queryClient = useQueryClient();
 
 	const {
 		register,
@@ -45,6 +48,7 @@ export function RsvpForm() {
 		setIsSubmitting(true);
 		try {
 			await submitRsvp(data);
+			await queryClient.invalidateQueries({ queryKey: QUERY_KEYS.RSVP });
 			setIsSubmitted(true);
 			toast.success("Thank you for your RSVP!");
 		} catch (error) {

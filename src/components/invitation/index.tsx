@@ -1,5 +1,4 @@
 import { AnimatePresence, motion } from "motion/react";
-import { ThemeToggle } from "@/src/components/theme-toggle";
 import { useInvitationAnimation } from "@/src/hooks/use-invitation-animation";
 import { InvitationBackground } from "./invitation-background";
 import { InvitationCard } from "./invitation-card";
@@ -28,11 +27,6 @@ export function Invitation() {
 
 	return (
 		<InvitationBackground>
-			{/* Theme toggle */}
-			<div className="fixed top-4 right-4 z-50">
-				<ThemeToggle />
-			</div>
-
 			<div className="min-h-screen flex flex-col items-center justify-center px-4 py-8">
 				{/* Sealed state - show wax seal */}
 				<AnimatePresence mode="wait">

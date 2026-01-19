@@ -9,7 +9,6 @@ import {
 } from "@tanstack/react-router";
 import type { ReactNode } from "react";
 import { PWAPrompt } from "@/src/components/pwa-prompt";
-import { ThemeProvider } from "@/src/components/theme-provider";
 import { Toaster } from "@/src/components/ui/sonner";
 import { queryClient } from "@/src/lib/query-client";
 import "../styles/app.css";
@@ -86,11 +85,9 @@ export const Route = createRootRoute({
 function RootComponent() {
 	return (
 		<QueryClientProvider client={queryClient}>
-			<ThemeProvider>
-				<RootDocument>
-					<Outlet />
-				</RootDocument>
-			</ThemeProvider>
+			<RootDocument>
+				<Outlet />
+			</RootDocument>
 		</QueryClientProvider>
 	);
 }
@@ -101,10 +98,7 @@ function RootDocument({ children }: Readonly<{ children: ReactNode }>) {
 			<head>
 				<HeadContent />
 			</head>
-			<body
-				suppressHydrationWarning
-				className="bg-neutral-50 dark:bg-neutral-950 text-neutral-900 dark:text-neutral-100 transition-colors"
-			>
+			<body className="bg-neutral-50 text-neutral-900">
 				{children}
 				<Toaster />
 				<PWAPrompt />

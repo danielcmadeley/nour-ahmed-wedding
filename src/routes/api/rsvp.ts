@@ -2,7 +2,6 @@ import { existsSync } from "node:fs";
 import { mkdir, readFile, writeFile } from "node:fs/promises";
 import { join } from "node:path";
 import { createFileRoute } from "@tanstack/react-router";
-import { createServerFn } from "@tanstack/react-start";
 import {
 	type RsvpEntry,
 	type RsvpResponse,
@@ -33,46 +32,41 @@ async function writeRsvpData(data: RsvpResponse): Promise<void> {
 	await writeFile(RSVP_FILE, JSON.stringify(data, null, 2), "utf-8");
 }
 
-const getRsvpList = createServerFn({ method: "GET" }).handler(async () => {
-	const data = await readRsvpData();
-	return Response.json(data);
-});
-
-const submitRsvp = createServerFn({ method: "POST" }).handler(
-	async ({ request }) => {
-		try {
-			const body = await request.json();
-			const validated = rsvpSchema.parse(body);
-
-			const data = await readRsvpData();
-
-			const newEntry: RsvpEntry = {
-				...validated,
-				id: crypto.randomUUID(),
-				createdAt: new Date().toISOString(),
-			};
-
-			data.guests.push(newEntry);
-			await writeRsvpData(data);
-
-			return Response.json(newEntry, { status: 201 });
-		} catch (error) {
-			console.error("RSVP submission error:", error);
-			return Response.json(
-				{ message: error instanceof Error ? error.message : "Invalid request" },
-				{ status: 400 },
-			);
-		}
-	},
-);
-
 export const Route = createFileRoute("/api/rsvp")({
-	component: () => null,
-});
+	server: {
+		handlers: {
+			GET: async () => {
+				const data = await readRsvpData();
+				return Response.json(data);
+			},
+			POST: async ({ request }) => {
+				try {
+					const body = await request.json();
+					const validated = rsvpSchema.parse(body);
 
-export const server = {
-	handlers: {
-		GET: getRsvpList,
-		POST: submitRsvp,
+					const data = await readRsvpData();
+
+					const newEntry: RsvpEntry = {
+						...validated,
+						id: crypto.randomUUID(),
+						createdAt: new Date().toISOString(),
+					};
+
+					data.guests.push(newEntry);
+					await writeRsvpData(data);
+
+					return Response.json(newEntry, { status: 201 });
+				} catch (error) {
+					console.error("RSVP submission error:", error);
+					return Response.json(
+						{
+							message:
+								error instanceof Error ? error.message : "Invalid request",
+						},
+						{ status: 400 },
+					);
+				}
+			},
+		},
 	},
-};
+});

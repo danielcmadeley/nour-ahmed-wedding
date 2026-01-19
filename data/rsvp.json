@@ -1,3 +1,24 @@
 {
-	"guests": []
+  "guests": [
+    {
+      "name": "Daniel Madeley",
+      "email": "daniel.c.madeley@gmail.com",
+      "attending": true,
+      "numberOfGuests": 1,
+      "dietaryRestrictions": "",
+      "message": "",
+      "id": "bbfee519-e7c8-40f1-b5a3-a72e2a4844c6",
+      "createdAt": "2026-01-19T17:02:59.352Z"
+    },
+    {
+      "name": "Nadine",
+      "email": "nadinetarek98@gmail.com",
+      "attending": false,
+      "numberOfGuests": 1,
+      "dietaryRestrictions": "",
+      "message": "NO",
+      "id": "6669d2d9-955e-4d46-8236-b6e489d8f2e5",
+      "createdAt": "2026-01-19T17:03:35.701Z"
+    }
+  ]
 }

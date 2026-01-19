@@ -1,13 +1,31 @@
+import { useQuery } from "@tanstack/react-query";
 import { Link } from "@tanstack/react-router";
 import { Calendar, Camera, Clock, MapPin, Shirt } from "lucide-react";
 import { motion } from "motion/react";
-import { WEDDING_DETAILS } from "@/src/lib/constants";
+import { fetchRsvpList } from "@/src/lib/api/rsvp";
+import { QUERY_KEYS, WEDDING_DETAILS } from "@/src/lib/constants";
+import type { RsvpEntry } from "@/src/types/rsvp";
 import { FloralDivider } from "./floral-decorations";
 import { RsvpForm } from "./rsvp-form";
 
 interface InvitationContentProps {
 	isRevealing: boolean;
 	onRevealComplete: () => void;
+}
+
+function getSortedGuests(guests: RsvpEntry[], attending: boolean) {
+	return [...guests]
+		.filter((guest) => guest.attending === attending)
+		.sort((guestA, guestB) => guestA.name.localeCompare(guestB.name));
+}
+
+function formatGuestLabel(guest: RsvpEntry) {
+	const totalGuests = guest.numberOfGuests ?? 1;
+	if (totalGuests <= 1) {
+		return guest.name;
+	}
+
+	return `${guest.name} (+${totalGuests - 1})`;
 }
 
 export function InvitationContent({
@@ -33,6 +51,24 @@ export function InvitationContent({
 			transition: { duration: 0.5, ease: "easeOut" },
 		},
 	};
+
+	const {
+		data: rsvpData,
+		isLoading: isRsvpLoading,
+		error: rsvpError,
+	} = useQuery({
+		queryKey: QUERY_KEYS.RSVP,
+		queryFn: fetchRsvpList,
+	});
+
+	const guests = rsvpData?.guests ?? [];
+	const attendingGuests = getSortedGuests(guests, true);
+	const notAttendingGuests = getSortedGuests(guests, false);
+	const totalAttendingCount = attendingGuests.reduce(
+		(total, guest) => total + (guest.numberOfGuests ?? 1),
+		0,
+	);
+	const totalDeclinedCount = notAttendingGuests.length;
 
 	return (
 		<motion.div
@@ -134,6 +170,54 @@ export function InvitationContent({
 					Kindly respond by {WEDDING_DETAILS.rsvpDeadline}
 				</p>
 				<RsvpForm />
+				<div className="mt-6 rounded-lg border border-wedding-gold/20 bg-wedding-card-bg/80 p-6 text-left">
+					<h3 className="font-script text-3xl text-wedding-burgundy text-center">
+						Guest List
+					</h3>
+					<p className="mt-2 text-center text-sm font-serif text-wedding-text-muted">
+						See who&apos;s joining the celebration
+					</p>
+					<p className="mt-1 text-center text-sm font-serif text-wedding-text-muted">
+						Total attending: {totalAttendingCount} guests · Declined:{" "}
+						{totalDeclinedCount}
+					</p>
+					{isRsvpLoading ? (
+						<p className="mt-4 text-center text-sm font-serif text-wedding-text-muted">
+							Loading guest list...
+						</p>
+					) : rsvpError ? (
+						<p className="mt-4 text-center text-sm font-serif text-wedding-text-muted">
+							Unable to load RSVP list right now.
+						</p>
+					) : guests.length === 0 ? (
+						<p className="mt-4 text-center text-sm font-serif text-wedding-text-muted">
+							No RSVPs yet. Be the first to respond!
+						</p>
+					) : (
+						<div className="mt-6 grid gap-6 sm:grid-cols-2">
+							<div>
+								<h4 className="text-sm font-serif uppercase tracking-widest text-wedding-sage-dark">
+									Attending ({attendingGuests.length})
+								</h4>
+								<ul className="mt-3 space-y-1 text-sm font-serif text-wedding-text">
+									{attendingGuests.map((guest) => (
+										<li key={guest.id}>{formatGuestLabel(guest)}</li>
+									))}
+								</ul>
+							</div>
+							<div>
+								<h4 className="text-sm font-serif uppercase tracking-widest text-wedding-rose">
+									Not Attending ({notAttendingGuests.length})
+								</h4>
+								<ul className="mt-3 space-y-1 text-sm font-serif text-wedding-text">
+									{notAttendingGuests.map((guest) => (
+										<li key={guest.id}>{guest.name}</li>
+									))}
+								</ul>
+							</div>
+						</div>
+					)}
+				</div>
 			</motion.div>
 
 			<motion.div variants={itemVariants}>

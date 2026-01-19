@@ -4,7 +4,6 @@ import { ArrowLeft, Camera } from "lucide-react";
 import { useEffect } from "react";
 import { Gallery } from "@/src/components/gallery";
 import { FloralCorner } from "@/src/components/invitation/floral-decorations";
-import { ThemeToggle } from "@/src/components/theme-toggle";
 import { UploadButton } from "@/src/components/upload-button";
 import { useImageDelete } from "@/src/hooks/use-image-delete";
 import { useImageUpload } from "@/src/hooks/use-image-upload";
@@ -94,7 +93,6 @@ function GalleryPage() {
 								onUploadError={handleUploadError}
 								onUploadBegin={handleUploadBegin}
 							/>
-							<ThemeToggle />
 						</div>
 					</div>
 				</div>
