@@ -226,3 +226,40 @@
     0 20px 25px -5px rgba(0, 0, 0, 0.1),
     0 8px 10px -6px rgba(0, 0, 0, 0.1);
 }
+
+/* Envelope colors */
+:root {
+  --envelope-sage: oklch(0.58 0.08 145);
+  --envelope-sage-light: oklch(0.63 0.07 145);
+  --envelope-sage-dark: oklch(0.52 0.09 145);
+  --envelope-emboss-light: oklch(0.62 0.06 145);
+  --envelope-emboss-shadow: oklch(0.50 0.08 145);
+  --envelope-text: oklch(0.38 0.06 145);
+  --wax-seal-cream: oklch(0.92 0.03 90);
+  --wax-seal-cream-light: oklch(0.95 0.02 90);
+  --wax-seal-cream-dark: oklch(0.85 0.04 90);
+}
+
+@theme inline {
+  --color-envelope-sage: var(--envelope-sage);
+  --color-envelope-sage-light: var(--envelope-sage-light);
+  --color-envelope-sage-dark: var(--envelope-sage-dark);
+  --color-envelope-emboss-light: var(--envelope-emboss-light);
+  --color-envelope-emboss-shadow: var(--envelope-emboss-shadow);
+  --color-envelope-text: var(--envelope-text);
+  --color-wax-seal-cream: var(--wax-seal-cream);
+  --color-wax-seal-cream-light: var(--wax-seal-cream-light);
+  --color-wax-seal-cream-dark: var(--wax-seal-cream-dark);
+}
+
+/* Embossed effect styling */
+.embossed {
+  filter: drop-shadow(1px 1px 0.5px var(--envelope-emboss-light))
+          drop-shadow(-0.5px -0.5px 0.5px var(--envelope-emboss-shadow));
+}
+
+/* Paper grain texture for envelope */
+.envelope-texture {
+  background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='grain'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3CfeColorMatrix type='saturate' values='0'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23grain)'/%3E%3C/svg%3E");
+  background-blend-mode: soft-light;
+}
