@@ -11,49 +11,44 @@ function isMobileDevice(): boolean {
 
 /**
  * Downloads a single image from a URL
- * On mobile, uses Web Share API to allow saving to photo gallery
- * On desktop, uses traditional download
+ * Uses a direct download approach that works on mobile browsers
  */
 export async function downloadImage(url: string, filename: string) {
 	try {
-		const response = await fetch(url);
+		// For mobile devices, we need a different approach
+		// The most reliable way is to open the image in a new tab and let the user long-press to save
+		// Or use a direct download with proper CORS handling
+
+		const response = await fetch(url, {
+			mode: 'cors',
+			credentials: 'omit'
+		});
 		if (!response.ok) throw new Error("Failed to fetch image");
 
 		const blob = await response.blob();
 
-		// On mobile devices, try to use the Web Share API
-		if (isMobileDevice() && navigator.share && navigator.canShare) {
-			// Create a File object from the blob
-			const file = new File([blob], filename, { type: blob.type });
-
-			// Check if we can share files
-			if (navigator.canShare({ files: [file] })) {
-				try {
-					await navigator.share({
-						files: [file],
-						title: "Save Image",
-						text: "Save this image to your photos",
-					});
-					return; // Successfully shared/saved
-				} catch (shareError) {
-					// User cancelled share or error occurred
-					// Fall through to traditional download
-					console.log("Share cancelled or failed, using download fallback");
-				}
-			}
-		}
-
-		// Fallback: Traditional download method (desktop or if share fails)
+		// Create object URL
 		const blobUrl = URL.createObjectURL(blob);
+
+		// Create a temporary anchor element
 		const link = document.createElement("a");
 		link.href = blobUrl;
 		link.download = filename;
-		document.body.appendChild(link);
-		link.click();
-		document.body.removeChild(link);
 
-		// Clean up the blob URL
-		URL.revokeObjectURL(blobUrl);
+		// For mobile browsers, we need to ensure the download attribute works
+		link.setAttribute('download', filename);
+		link.style.display = 'none';
+
+		document.body.appendChild(link);
+
+		// Trigger download
+		link.click();
+
+		// Cleanup
+		setTimeout(() => {
+			document.body.removeChild(link);
+			URL.revokeObjectURL(blobUrl);
+		}, 100);
 	} catch (error) {
 		console.error("Download failed:", error);
 		throw error;
@@ -61,42 +56,32 @@ export async function downloadImage(url: string, filename: string) {
 }
 
 /**
- * Downloads multiple images as a ZIP file or shares them individually on mobile
+ * Downloads multiple images
+ * On mobile: Downloads each image individually (no ZIP) so they save to gallery
+ * On desktop: Creates a ZIP file
  */
 export async function downloadImagesAsZip(
 	images: Array<{ url: string; name: string }>,
 	zipFilename = "images.zip",
 ) {
 	try {
-		// On mobile, try to share images using Web Share API
-		if (isMobileDevice() && navigator.share && navigator.canShare) {
-			// Fetch all images and create File objects
-			const files = await Promise.all(
-				images.map(async (image) => {
-					const response = await fetch(image.url);
-					if (!response.ok) throw new Error(`Failed to fetch ${image.name}`);
-					const blob = await response.blob();
-					return new File([blob], image.name, { type: blob.type });
-				}),
-			);
+		// On mobile devices, download each image individually
+		// This allows them to be saved to the photo gallery
+		if (isMobileDevice()) {
+			// Download each image with a small delay between downloads
+			for (let i = 0; i < images.length; i++) {
+				const image = images[i];
+				await downloadImage(image.url, image.name);
 
-			// Try to share all files at once
-			if (navigator.canShare({ files })) {
-				try {
-					await navigator.share({
-						files,
-						title: "Save Images",
-						text: `Save ${files.length} images to your photos`,
-					});
-					return; // Successfully shared
-				} catch (shareError) {
-					// User cancelled or error occurred, fall through to ZIP download
-					console.log("Share cancelled or failed, using ZIP fallback");
+				// Add a small delay between downloads to avoid overwhelming the browser
+				if (i < images.length - 1) {
+					await new Promise(resolve => setTimeout(resolve, 300));
 				}
 			}
+			return;
 		}
 
-		// Desktop or fallback: Create ZIP file
+		// Desktop: Create ZIP file
 		const zip = new JSZip();
 		const imageFolder = zip.folder("images");
 
@@ -106,7 +91,10 @@ export async function downloadImagesAsZip(
 		await Promise.all(
 			images.map(async (image, index) => {
 				try {
-					const response = await fetch(image.url);
+					const response = await fetch(image.url, {
+						mode: 'cors',
+						credentials: 'omit'
+					});
 					if (!response.ok) throw new Error(`Failed to fetch ${image.name}`);
 
 					const blob = await response.blob();
@@ -128,12 +116,14 @@ export async function downloadImagesAsZip(
 		const link = document.createElement("a");
 		link.href = blobUrl;
 		link.download = zipFilename;
+		link.style.display = 'none';
 		document.body.appendChild(link);
 		link.click();
-		document.body.removeChild(link);
 
-		// Clean up
-		URL.revokeObjectURL(blobUrl);
+		setTimeout(() => {
+			document.body.removeChild(link);
+			URL.revokeObjectURL(blobUrl);
+		}, 100);
 	} catch (error) {
 		console.error("Download failed:", error);
 		throw error;
