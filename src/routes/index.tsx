@@ -1,20 +1,26 @@
-import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { createFileRoute } from "@tanstack/react-router";
-import { useCallback, useEffect, useState } from "react";
-import { toast } from "sonner";
 import { Gallery } from "@/src/components/gallery";
 import { ThemeToggle } from "@/src/components/theme-toggle";
 import { UploadButton } from "@/src/components/upload-button";
-import { deleteImages, fetchImages } from "@/src/lib/api/images";
+import { useImageDelete } from "@/src/hooks/use-image-delete";
+import { useImageUpload } from "@/src/hooks/use-image-upload";
+import { fetchImages } from "@/src/lib/api/images";
 import { QUERY_KEYS, STORAGE_KEYS } from "@/src/lib/constants";
+import { useQuery } from "@tanstack/react-query";
+import { createFileRoute } from "@tanstack/react-router";
+import { useEffect } from "react";
 
 export const Route = createFileRoute("/")({
 	component: Home,
 });
 
 function Home() {
-	const queryClient = useQueryClient();
-	const [uploadingImages, setUploadingImages] = useState<string[]>([]);
+	const { handleDelete } = useImageDelete();
+	const {
+		uploadingImages,
+		handleUploadBegin,
+		handleUploadError,
+		handleUploadComplete,
+	} = useImageUpload();
 
 	const {
 		data: images = [],
@@ -35,71 +41,11 @@ function Home() {
 					STORAGE_KEYS.GALLERY_IMAGE_COUNT,
 					String(images.length),
 				);
-			} catch (_e) {
+			} catch {
 				// Ignore localStorage errors
 			}
 		}
 	}, [images.length, isLoading]);
-
-	const deleteMutation = useMutation({
-		mutationFn: deleteImages,
-		onSuccess: (_, keys) => {
-			queryClient.invalidateQueries({ queryKey: QUERY_KEYS.IMAGES });
-			const count = keys.length;
-			toast.success(
-				count === 1
-					? "Image deleted successfully"
-					: `${count} images deleted successfully`,
-			);
-		},
-		onError: (error) => {
-			toast.error("Failed to delete images", {
-				description: error.message,
-			});
-		},
-	});
-
-	const handleDelete = (keys: string[]) => {
-		deleteMutation.mutate(keys);
-	};
-
-	const handleUploadBegin = useCallback((name: string) => {
-		setUploadingImages((prev) => [...prev, name]);
-		toast.loading(`Uploading ${name}...`, {
-			id: `upload-${name}`,
-		});
-	}, []);
-
-	const handleUploadError = useCallback((error: Error) => {
-		setUploadingImages((prev) => prev.slice(1));
-		toast.dismiss();
-		toast.error("Failed to upload image", {
-			description: error.message,
-		});
-	}, []);
-
-	const handleUploadComplete = useCallback(
-		(uploaded: Array<{ name: string; url: string; key: string }>) => {
-			queryClient.invalidateQueries({ queryKey: QUERY_KEYS.IMAGES });
-			const fileCount = uploaded.length;
-			const fileNames = uploaded.map((file) => file.name);
-
-			setUploadingImages((prev) =>
-				prev.filter((name) => !fileNames.includes(name)),
-			);
-
-			for (const name of fileNames) {
-				toast.dismiss(`upload-${name}`);
-			}
-
-			toast.success(
-				fileCount === 1
-					? "Image uploaded successfully"
-					: `${fileCount} images uploaded successfully`,
-			);
-		},
-		[queryClient],
-	);
 
 	return (
 		<div className="min-h-screen bg-gradient-to-b from-neutral-50 to-neutral-100 dark:from-neutral-950 dark:to-neutral-900">

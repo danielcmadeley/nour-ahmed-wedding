@@ -1,19 +1,4 @@
 import {
-	ChevronLeftIcon,
-	ChevronRightIcon,
-	DownloadIcon,
-	ImageIcon,
-	Trash2Icon,
-} from "lucide-react";
-import {
-	useCallback,
-	useEffect,
-	useId,
-	useMemo,
-	useRef,
-	useState,
-} from "react";
-import {
 	AlertDialog,
 	AlertDialogAction,
 	AlertDialogCancel,
@@ -52,6 +37,21 @@ import {
 } from "@/src/lib/utils/download";
 import { formatFileSizeMB } from "@/src/lib/utils/format";
 import type { GalleryImage } from "@/src/types/gallery";
+import {
+	ChevronLeftIcon,
+	ChevronRightIcon,
+	DownloadIcon,
+	ImageIcon,
+	Trash2Icon,
+} from "lucide-react";
+import {
+	useCallback,
+	useEffect,
+	useId,
+	useMemo,
+	useRef,
+	useState,
+} from "react";
 
 const dialogFullscreenStyle: React.CSSProperties = {
 	position: "fixed",
@@ -214,39 +214,25 @@ function ImageViewer({
 						</>
 					)}
 
-					{/* Image counter */}
-					{images.length > 1 && (
-						<div className="absolute top-4 left-1/2 -translate-x-1/2 z-20 px-3 py-1 rounded-full bg-black/50 text-white text-sm">
-							{currentIndex + 1} / {images.length}
-						</div>
-					)}
-
-					<img
-						key={currentImage.key}
-						src={currentImage.url}
-						alt={currentImage.name}
-						className="max-w-[100vw] max-h-screen w-auto h-auto object-contain transition-opacity duration-200"
-						style={{
-							maxWidth: "100vw",
-							maxHeight: "100vh",
-							width: "auto",
-							height: "auto",
-						}}
-					/>
-					<div className="absolute bottom-0 left-0 right-0 bg-black/60 text-white p-4 z-10">
-						<div className="flex items-center justify-between">
-							<div>
-								<p className="font-medium">{currentImage.name}</p>
-								{currentImage.size && (
-									<p className="text-sm text-white/80">
-										{formatFileSizeMB(currentImage.size)}
-									</p>
-								)}
+					{/* Top toolbar with title and actions - pr-12 leaves space for the X close button */}
+					<div className="absolute top-0 left-0 right-0 bg-black/60 text-white p-3 sm:p-4 pr-12 sm:pr-14 z-10 safe-area-top">
+						<div className="flex items-center justify-between gap-2">
+							<div className="flex-1 min-w-0">
+								<p className="font-medium truncate text-sm sm:text-base">{currentImage.name}</p>
+								<div className="flex items-center gap-2 text-xs sm:text-sm text-white/80">
+									{images.length > 1 && (
+										<span>{currentIndex + 1} / {images.length}</span>
+									)}
+									{currentImage.size && (
+										<span>{formatFileSizeMB(currentImage.size)}</span>
+									)}
+								</div>
 							</div>
-							<div className="flex items-center gap-2 ml-4">
+							<div className="flex items-center gap-1 sm:gap-2 shrink-0">
 								<Button
 									variant="secondary"
 									size="sm"
+									className="h-8 px-2 sm:px-3"
 									onClick={async (e) => {
 										e.stopPropagation();
 										try {
@@ -257,8 +243,8 @@ function ImageViewer({
 										}
 									}}
 								>
-									<DownloadIcon />
-									Download
+									<DownloadIcon className="size-4" />
+									<span className="hidden sm:inline">Download</span>
 								</Button>
 								{onDelete && (
 									<AlertDialog>
@@ -266,10 +252,11 @@ function ImageViewer({
 											<Button
 												variant="destructive"
 												size="sm"
+												className="h-8 px-2 sm:px-3"
 												onClick={(e) => e.stopPropagation()}
 											>
-												<Trash2Icon />
-												Delete
+												<Trash2Icon className="size-4" />
+												<span className="hidden sm:inline">Delete</span>
 											</Button>
 										</AlertDialogTrigger>
 										<AlertDialogContent>
@@ -308,6 +295,19 @@ function ImageViewer({
 							</div>
 						</div>
 					</div>
+
+					<img
+						key={currentImage.key}
+						src={currentImage.url}
+						alt={currentImage.name}
+						className="max-w-[100vw] max-h-screen w-auto h-auto object-contain transition-opacity duration-200"
+						style={{
+							maxWidth: "100vw",
+							maxHeight: "100vh",
+							width: "auto",
+							height: "auto",
+						}}
+					/>
 				</div>
 			</DialogContent>
 		</Dialog>
