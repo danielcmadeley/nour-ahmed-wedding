@@ -4,7 +4,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Project Overview
 
-This is a wedding image gallery application built with TanStack Start (React-based full-stack framework) and UploadThing for file uploads. The app allows users to upload, view, and delete wedding photos.
+This is a wedding image gallery application built with TanStack Start (React-based full-stack framework) and UploadThing for file uploads. The app allows users to upload, view, and delete wedding photos with a modern UI featuring light/dark theme support.
 
 ## Development Commands
 

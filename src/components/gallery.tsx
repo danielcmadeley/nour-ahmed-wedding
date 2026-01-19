@@ -1,10 +1,18 @@
 import {
 	ChevronLeftIcon,
 	ChevronRightIcon,
+	DownloadIcon,
 	ImageIcon,
 	Trash2Icon,
 } from "lucide-react";
-import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import {
+	useCallback,
+	useEffect,
+	useId,
+	useMemo,
+	useRef,
+	useState,
+} from "react";
 import {
 	AlertDialog,
 	AlertDialogAction,
@@ -37,6 +45,11 @@ import { Skeleton } from "@/src/components/ui/skeleton";
 import { Spinner } from "@/src/components/ui/spinner";
 import { STORAGE_KEYS } from "@/src/lib/constants";
 import { cn } from "@/src/lib/utils";
+import {
+	downloadImage,
+	downloadImagesAsZip,
+	getFilenameFromUrl,
+} from "@/src/lib/utils/download";
 import { formatFileSizeMB } from "@/src/lib/utils/format";
 import type { GalleryImage } from "@/src/types/gallery";
 
@@ -230,52 +243,69 @@ function ImageViewer({
 									</p>
 								)}
 							</div>
-							{onDelete && (
-								<AlertDialog>
-									<AlertDialogTrigger asChild>
-										<Button
-											variant="destructive"
-											size="sm"
-											onClick={(e) => e.stopPropagation()}
-											className="ml-4"
-										>
-											<Trash2Icon />
-											Delete
-										</Button>
-									</AlertDialogTrigger>
-									<AlertDialogContent>
-										<AlertDialogHeader>
-											<AlertDialogTitle>Delete Image</AlertDialogTitle>
-											<AlertDialogDescription>
-												Are you sure you want to delete "{currentImage.name}"?
-												This action cannot be undone.
-											</AlertDialogDescription>
-										</AlertDialogHeader>
-										<AlertDialogFooter>
-											<AlertDialogCancel>Cancel</AlertDialogCancel>
-											<AlertDialogAction
-												onClick={() => {
-													onDelete([currentImage.key]);
-													// If this was the last image, close the viewer
-													if (images.length === 1) {
-														onClose();
-													} else {
-														// Navigate to next or previous image
-														if (currentIndex === images.length - 1) {
-															goToPrevious();
-														} else {
-															goToNext();
-														}
-													}
-												}}
-												className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+							<div className="flex items-center gap-2 ml-4">
+								<Button
+									variant="secondary"
+									size="sm"
+									onClick={async (e) => {
+										e.stopPropagation();
+										try {
+											const filename = getFilenameFromUrl(currentImage.url);
+											await downloadImage(currentImage.url, filename);
+										} catch (error) {
+											console.error("Download failed:", error);
+										}
+									}}
+								>
+									<DownloadIcon />
+									Download
+								</Button>
+								{onDelete && (
+									<AlertDialog>
+										<AlertDialogTrigger asChild>
+											<Button
+												variant="destructive"
+												size="sm"
+												onClick={(e) => e.stopPropagation()}
 											>
+												<Trash2Icon />
 												Delete
-											</AlertDialogAction>
-										</AlertDialogFooter>
-									</AlertDialogContent>
-								</AlertDialog>
-							)}
+											</Button>
+										</AlertDialogTrigger>
+										<AlertDialogContent>
+											<AlertDialogHeader>
+												<AlertDialogTitle>Delete Image</AlertDialogTitle>
+												<AlertDialogDescription>
+													Are you sure you want to delete "{currentImage.name}"?
+													This action cannot be undone.
+												</AlertDialogDescription>
+											</AlertDialogHeader>
+											<AlertDialogFooter>
+												<AlertDialogCancel>Cancel</AlertDialogCancel>
+												<AlertDialogAction
+													onClick={() => {
+														onDelete([currentImage.key]);
+														// If this was the last image, close the viewer
+														if (images.length === 1) {
+															onClose();
+														} else {
+															// Navigate to next or previous image
+															if (currentIndex === images.length - 1) {
+																goToPrevious();
+															} else {
+																goToNext();
+															}
+														}
+													}}
+													className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+												>
+													Delete
+												</AlertDialogAction>
+											</AlertDialogFooter>
+										</AlertDialogContent>
+									</AlertDialog>
+								)}
+							</div>
 						</div>
 					</div>
 				</div>
@@ -304,11 +334,13 @@ function GalleryItem({
 
 	return (
 		<>
-			<div
+			<button
+				type="button"
 				data-slot="card"
 				className={cn(
-					"bg-card text-card-foreground rounded-xl border shadow-sm",
+					"bg-card text-card-foreground rounded-xl border shadow-sm text-left",
 					"relative overflow-hidden group transition-all border-neutral-200 dark:border-neutral-800 p-0",
+					"focus:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2",
 					selectionMode
 						? "cursor-pointer"
 						: "cursor-pointer hover:shadow-lg hover:border-neutral-300 dark:hover:border-neutral-700",
@@ -347,7 +379,7 @@ function GalleryItem({
 						/>
 					</AspectRatio>
 				</CardContent>
-			</div>
+			</button>
 			<ImageViewer
 				images={allImages}
 				initialIndex={imageIndex}
@@ -360,13 +392,19 @@ function GalleryItem({
 }
 
 function GallerySkeleton({ count }: { count: number }) {
+	const baseId = useId();
+	const skeletonKeys = useMemo(
+		() => Array.from({ length: count }, (_, i) => `${baseId}-skeleton-${i}`),
+		[baseId, count],
+	);
+
 	if (count === 0) return null;
 
 	return (
 		<>
-			{Array.from({ length: count }, (_, index) => (
+			{skeletonKeys.map((key) => (
 				<div
-					key={`skeleton-${index}`}
+					key={key}
 					data-slot="card"
 					className="bg-card text-card-foreground rounded-xl border shadow-sm overflow-hidden border-neutral-200 dark:border-neutral-800 p-0"
 				>
@@ -492,34 +530,73 @@ export function Gallery({
 						)}
 					</div>
 					<div className="flex items-center gap-2">
-						{selectionMode && selectedKeys.size > 0 && onDelete && (
-							<AlertDialog>
-								<AlertDialogTrigger asChild>
-									<Button variant="destructive" size="sm">
-										<Trash2Icon />
-										Delete ({selectedKeys.size})
-									</Button>
-								</AlertDialogTrigger>
-								<AlertDialogContent>
-									<AlertDialogHeader>
-										<AlertDialogTitle>Delete Images</AlertDialogTitle>
-										<AlertDialogDescription>
-											Are you sure you want to delete {selectedKeys.size} image
-											{selectedKeys.size !== 1 ? "s" : ""}? This action cannot
-											be undone.
-										</AlertDialogDescription>
-									</AlertDialogHeader>
-									<AlertDialogFooter>
-										<AlertDialogCancel>Cancel</AlertDialogCancel>
-										<AlertDialogAction
-											onClick={handleDeleteSelected}
-											className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
-										>
-											Delete
-										</AlertDialogAction>
-									</AlertDialogFooter>
-								</AlertDialogContent>
-							</AlertDialog>
+						{selectionMode && selectedKeys.size > 0 && (
+							<>
+								<Button
+									variant="secondary"
+									size="sm"
+									onClick={async () => {
+										const selectedImages = images.filter((img) =>
+											selectedKeys.has(img.key),
+										);
+										if (selectedImages.length === 0) return;
+
+										try {
+											if (selectedImages.length === 1) {
+												// Single image download
+												const image = selectedImages[0];
+												const filename = getFilenameFromUrl(image.url);
+												await downloadImage(image.url, filename);
+											} else {
+												// Bulk download as ZIP
+												const imagesToDownload = selectedImages.map((img) => ({
+													url: img.url,
+													name: getFilenameFromUrl(img.url),
+												}));
+												await downloadImagesAsZip(
+													imagesToDownload,
+													"wedding-photos.zip",
+												);
+											}
+										} catch (error) {
+											console.error("Download failed:", error);
+										}
+									}}
+								>
+									<DownloadIcon />
+									Download ({selectedKeys.size})
+								</Button>
+								{onDelete && (
+									<AlertDialog>
+										<AlertDialogTrigger asChild>
+											<Button variant="destructive" size="sm">
+												<Trash2Icon />
+												Delete ({selectedKeys.size})
+											</Button>
+										</AlertDialogTrigger>
+										<AlertDialogContent>
+											<AlertDialogHeader>
+												<AlertDialogTitle>Delete Images</AlertDialogTitle>
+												<AlertDialogDescription>
+													Are you sure you want to delete {selectedKeys.size}{" "}
+													image
+													{selectedKeys.size !== 1 ? "s" : ""}? This action
+													cannot be undone.
+												</AlertDialogDescription>
+											</AlertDialogHeader>
+											<AlertDialogFooter>
+												<AlertDialogCancel>Cancel</AlertDialogCancel>
+												<AlertDialogAction
+													onClick={handleDeleteSelected}
+													className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+												>
+													Delete
+												</AlertDialogAction>
+											</AlertDialogFooter>
+										</AlertDialogContent>
+									</AlertDialog>
+								)}
+							</>
 						)}
 						<Button
 							variant={selectionMode ? "default" : "outline"}
