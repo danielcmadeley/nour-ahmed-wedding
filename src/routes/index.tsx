@@ -48,7 +48,7 @@ function Home() {
 	}, [images.length, isLoading]);
 
 	return (
-		<div className="min-h-screen bg-gradient-to-b from-neutral-50 to-neutral-100 dark:from-neutral-950 dark:to-neutral-900">
+		<div className="min-h-screen bg-linear-to-b from-neutral-50 to-neutral-100 dark:from-neutral-950 dark:to-neutral-900">
 			{/* Header */}
 			<header className="sticky top-0 z-50 w-full border-b border-neutral-200 dark:border-neutral-800 bg-white/80 dark:bg-neutral-950/80 backdrop-blur-xl supports-[backdrop-filter]:bg-white/60 dark:supports-[backdrop-filter]:bg-neutral-950/60">
 				<div className="container mx-auto px-4 sm:px-6 lg:px-8 max-w-7xl">
