@@ -9,10 +9,17 @@
 // Additionally, you should also exclude this file from your linter and/or formatter to prevent it from being checked or modified.
 
 import { Route as rootRouteImport } from './routes/__root'
+import { Route as GalleryRouteImport } from './routes/gallery'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as ApiUploadthingRouteImport } from './routes/api/uploadthing'
+import { Route as ApiRsvpRouteImport } from './routes/api/rsvp'
 import { Route as ApiImagesRouteImport } from './routes/api/images'
 
+const GalleryRoute = GalleryRouteImport.update({
+  id: '/gallery',
+  path: '/gallery',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const IndexRoute = IndexRouteImport.update({
   id: '/',
   path: '/',
@@ -23,6 +30,11 @@ const ApiUploadthingRoute = ApiUploadthingRouteImport.update({
   path: '/api/uploadthing',
   getParentRoute: () => rootRouteImport,
 } as any)
+const ApiRsvpRoute = ApiRsvpRouteImport.update({
+  id: '/api/rsvp',
+  path: '/api/rsvp',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const ApiImagesRoute = ApiImagesRouteImport.update({
   id: '/api/images',
   path: '/api/images',
@@ -31,36 +43,57 @@ const ApiImagesRoute = ApiImagesRouteImport.update({
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
+  '/gallery': typeof GalleryRoute
   '/api/images': typeof ApiImagesRoute
+  '/api/rsvp': typeof ApiRsvpRoute
   '/api/uploadthing': typeof ApiUploadthingRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
+  '/gallery': typeof GalleryRoute
   '/api/images': typeof ApiImagesRoute
+  '/api/rsvp': typeof ApiRsvpRoute
   '/api/uploadthing': typeof ApiUploadthingRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
+  '/gallery': typeof GalleryRoute
   '/api/images': typeof ApiImagesRoute
+  '/api/rsvp': typeof ApiRsvpRoute
   '/api/uploadthing': typeof ApiUploadthingRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/' | '/api/images' | '/api/uploadthing'
+  fullPaths: '/' | '/gallery' | '/api/images' | '/api/rsvp' | '/api/uploadthing'
   fileRoutesByTo: FileRoutesByTo
-  to: '/' | '/api/images' | '/api/uploadthing'
-  id: '__root__' | '/' | '/api/images' | '/api/uploadthing'
+  to: '/' | '/gallery' | '/api/images' | '/api/rsvp' | '/api/uploadthing'
+  id:
+    | '__root__'
+    | '/'
+    | '/gallery'
+    | '/api/images'
+    | '/api/rsvp'
+    | '/api/uploadthing'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
+  GalleryRoute: typeof GalleryRoute
   ApiImagesRoute: typeof ApiImagesRoute
+  ApiRsvpRoute: typeof ApiRsvpRoute
   ApiUploadthingRoute: typeof ApiUploadthingRoute
 }
 
 declare module '@tanstack/react-router' {
   interface FileRoutesByPath {
+    '/gallery': {
+      id: '/gallery'
+      path: '/gallery'
+      fullPath: '/gallery'
+      preLoaderRoute: typeof GalleryRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/': {
       id: '/'
       path: '/'
@@ -75,6 +108,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ApiUploadthingRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/api/rsvp': {
+      id: '/api/rsvp'
+      path: '/api/rsvp'
+      fullPath: '/api/rsvp'
+      preLoaderRoute: typeof ApiRsvpRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/api/images': {
       id: '/api/images'
       path: '/api/images'
@@ -87,7 +127,9 @@ declare module '@tanstack/react-router' {
 
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
+  GalleryRoute: GalleryRoute,
   ApiImagesRoute: ApiImagesRoute,
+  ApiRsvpRoute: ApiRsvpRoute,
   ApiUploadthingRoute: ApiUploadthingRoute,
 }
 export const routeTree = rootRouteImport

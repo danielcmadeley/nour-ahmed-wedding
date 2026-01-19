@@ -1,4 +1,9 @@
-import { ChevronLeftIcon, ChevronRightIcon, DownloadIcon, Trash2Icon } from "lucide-react";
+import {
+	ChevronLeftIcon,
+	ChevronRightIcon,
+	DownloadIcon,
+	Trash2Icon,
+} from "lucide-react";
 import { useCallback, useEffect, useRef, useState } from "react";
 import {
 	AlertDialog,
@@ -18,10 +23,7 @@ import {
 	DialogDescription,
 	DialogTitle,
 } from "@/src/components/ui/dialog";
-import {
-	downloadImage,
-	getFilenameFromUrl,
-} from "@/src/lib/utils/download";
+import { downloadImage, getFilenameFromUrl } from "@/src/lib/utils/download";
 import { formatFileSizeMB } from "@/src/lib/utils/format";
 import type { GalleryImage } from "@/src/types/gallery";
 

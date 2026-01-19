@@ -20,8 +20,8 @@ export async function downloadImage(url: string, filename: string) {
 		// Or use a direct download with proper CORS handling
 
 		const response = await fetch(url, {
-			mode: 'cors',
-			credentials: 'omit'
+			mode: "cors",
+			credentials: "omit",
 		});
 		if (!response.ok) throw new Error("Failed to fetch image");
 
@@ -36,8 +36,8 @@ export async function downloadImage(url: string, filename: string) {
 		link.download = filename;
 
 		// For mobile browsers, we need to ensure the download attribute works
-		link.setAttribute('download', filename);
-		link.style.display = 'none';
+		link.setAttribute("download", filename);
+		link.style.display = "none";
 
 		document.body.appendChild(link);
 
@@ -75,7 +75,7 @@ export async function downloadImagesAsZip(
 
 				// Add a small delay between downloads to avoid overwhelming the browser
 				if (i < images.length - 1) {
-					await new Promise(resolve => setTimeout(resolve, 300));
+					await new Promise((resolve) => setTimeout(resolve, 300));
 				}
 			}
 			return;
@@ -92,8 +92,8 @@ export async function downloadImagesAsZip(
 			images.map(async (image, index) => {
 				try {
 					const response = await fetch(image.url, {
-						mode: 'cors',
-						credentials: 'omit'
+						mode: "cors",
+						credentials: "omit",
 					});
 					if (!response.ok) throw new Error(`Failed to fetch ${image.name}`);
 
@@ -116,7 +116,7 @@ export async function downloadImagesAsZip(
 		const link = document.createElement("a");
 		link.href = blobUrl;
 		link.download = zipFilename;
-		link.style.display = 'none';
+		link.style.display = "none";
 		document.body.appendChild(link);
 		link.click();
 

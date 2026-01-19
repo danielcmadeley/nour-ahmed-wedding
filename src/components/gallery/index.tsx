@@ -1,8 +1,8 @@
 import { useMemo } from "react";
-import { cn } from "@/src/lib/utils";
-import { STORAGE_KEYS } from "@/src/lib/constants";
-import type { GalleryImage } from "@/src/types/gallery";
 import { useGallerySelection } from "@/src/hooks/use-gallery-selection";
+import { STORAGE_KEYS } from "@/src/lib/constants";
+import { cn } from "@/src/lib/utils";
+import type { GalleryImage } from "@/src/types/gallery";
 import { GalleryEmpty } from "./gallery-empty";
 import { GalleryItem } from "./gallery-item";
 import { GallerySkeleton } from "./gallery-skeleton";

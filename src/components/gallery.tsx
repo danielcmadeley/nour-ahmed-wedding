@@ -1,4 +1,20 @@
 import {
+	ChevronLeftIcon,
+	ChevronRightIcon,
+	DownloadIcon,
+	ImageIcon,
+	Trash2Icon,
+	XIcon,
+} from "lucide-react";
+import {
+	useCallback,
+	useEffect,
+	useId,
+	useMemo,
+	useRef,
+	useState,
+} from "react";
+import {
 	AlertDialog,
 	AlertDialogAction,
 	AlertDialogCancel,
@@ -37,22 +53,6 @@ import {
 } from "@/src/lib/utils/download";
 import { formatFileSizeMB } from "@/src/lib/utils/format";
 import type { GalleryImage } from "@/src/types/gallery";
-import {
-	ChevronLeftIcon,
-	ChevronRightIcon,
-	DownloadIcon,
-	ImageIcon,
-	Trash2Icon,
-	XIcon,
-} from "lucide-react";
-import {
-	useCallback,
-	useEffect,
-	useId,
-	useMemo,
-	useRef,
-	useState,
-} from "react";
 
 const dialogFullscreenStyle: React.CSSProperties = {
 	position: "fixed",
@@ -352,14 +352,14 @@ function GalleryItem({
 				type="button"
 				data-slot="card"
 				className={cn(
-					"bg-card text-card-foreground rounded-xl border shadow-sm text-left",
-					"relative overflow-hidden group transition-all border-neutral-200 dark:border-neutral-800 p-0",
-					"focus:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2",
+					"bg-wedding-card-bg text-wedding-text rounded-xl border shadow-sm text-left",
+					"relative overflow-hidden group transition-all border-wedding-border p-0",
+					"focus:outline-none focus-visible:ring-2 focus-visible:ring-wedding-gold focus-visible:ring-offset-2",
 					selectionMode
 						? "cursor-pointer"
-						: "cursor-pointer hover:shadow-lg hover:border-neutral-300 dark:hover:border-neutral-700",
+						: "cursor-pointer hover:shadow-lg hover:border-wedding-gold/50",
 					isSelected &&
-						"ring-2 ring-neutral-900 dark:ring-neutral-100 ring-offset-2 ring-offset-neutral-50 dark:ring-offset-neutral-950",
+						"ring-2 ring-wedding-gold ring-offset-2 ring-offset-wedding-bg",
 				)}
 				onClick={selectionMode ? handleCardClick : () => setIsDialogOpen(true)}
 			>
@@ -377,10 +377,7 @@ function GalleryItem({
 					</div>
 				)}
 				<CardContent className="p-0">
-					<AspectRatio
-						ratio={1}
-						className="overflow-hidden bg-neutral-100 dark:bg-neutral-900"
-					>
+					<AspectRatio ratio={1} className="overflow-hidden bg-wedding-cream">
 						<img
 							src={image.url}
 							alt={image.name}
@@ -420,14 +417,11 @@ function GallerySkeleton({ count }: { count: number }) {
 				<div
 					key={key}
 					data-slot="card"
-					className="bg-card text-card-foreground rounded-xl border shadow-sm overflow-hidden border-neutral-200 dark:border-neutral-800 p-0"
+					className="bg-wedding-card-bg text-wedding-text rounded-xl border shadow-sm overflow-hidden border-wedding-border p-0"
 				>
 					<CardContent className="p-0">
-						<AspectRatio
-							ratio={1}
-							className="bg-neutral-100 dark:bg-neutral-900"
-						>
-							<Skeleton className="w-full h-full bg-neutral-200 dark:bg-neutral-800" />
+						<AspectRatio ratio={1} className="bg-wedding-cream">
+							<Skeleton className="w-full h-full bg-wedding-blush/50" />
 						</AspectRatio>
 					</CardContent>
 				</div>
@@ -440,16 +434,13 @@ function UploadingImagePlaceholder({ fileName }: { fileName: string }) {
 	return (
 		<div
 			data-slot="card"
-			className="bg-card text-card-foreground rounded-xl border shadow-sm overflow-hidden border-dashed border-neutral-300 dark:border-neutral-700 p-0"
+			className="bg-wedding-card-bg text-wedding-text rounded-xl border shadow-sm overflow-hidden border-dashed border-wedding-gold/50 p-0"
 		>
 			<CardContent className="p-0">
-				<AspectRatio
-					ratio={1}
-					className="relative bg-neutral-100 dark:bg-neutral-900"
-				>
-					<div className="absolute inset-0 flex flex-col items-center justify-center gap-2 bg-neutral-50/80 dark:bg-neutral-950/80">
-						<Spinner className="size-8 text-neutral-600 dark:text-neutral-400" />
-						<p className="text-xs text-neutral-600 dark:text-neutral-400 text-center px-2 truncate w-full">
+				<AspectRatio ratio={1} className="relative bg-wedding-cream">
+					<div className="absolute inset-0 flex flex-col items-center justify-center gap-2 bg-wedding-ivory/80">
+						<Spinner className="size-8 text-wedding-gold" />
+						<p className="text-xs text-wedding-text-muted text-center px-2 truncate w-full font-serif">
 							{fileName}
 						</p>
 					</div>
@@ -519,13 +510,13 @@ export function Gallery({
 			<Empty className={className}>
 				<EmptyHeader>
 					<EmptyMedia variant="icon">
-						<ImageIcon className="text-neutral-400 dark:text-neutral-600" />
+						<ImageIcon className="text-wedding-gold" />
 					</EmptyMedia>
-					<EmptyTitle className="text-neutral-900 dark:text-neutral-100">
-						No images yet
+					<EmptyTitle className="text-wedding-burgundy font-serif">
+						No memories yet
 					</EmptyTitle>
-					<EmptyDescription className="text-neutral-600 dark:text-neutral-400">
-						Upload your first image to see it appear in the gallery.
+					<EmptyDescription className="text-wedding-text-muted font-serif">
+						Upload your first photo to start capturing beautiful moments.
 					</EmptyDescription>
 				</EmptyHeader>
 			</Empty>
@@ -538,7 +529,7 @@ export function Gallery({
 				<div className="flex items-center justify-between mb-6">
 					<div className="flex items-center gap-2">
 						{selectionMode && (
-							<span className="text-sm font-medium text-neutral-600 dark:text-neutral-400">
+							<span className="text-sm font-medium text-wedding-text-muted font-serif">
 								{selectedKeys.size} selected
 							</span>
 						)}

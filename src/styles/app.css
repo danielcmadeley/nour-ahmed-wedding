@@ -125,3 +125,104 @@
     @apply bg-background text-foreground;
   }
 }
+
+/* Wedding Invitation Styles */
+:root {
+  /* Wedding Color Palette - Light Mode */
+  --wedding-blush: oklch(0.92 0.03 10);
+  --wedding-rose: oklch(0.75 0.12 10);
+  --wedding-gold: oklch(0.78 0.12 85);
+  --wedding-gold-dark: oklch(0.65 0.14 85);
+  --wedding-cream: oklch(0.97 0.01 90);
+  --wedding-ivory: oklch(0.95 0.02 90);
+  --wedding-sage: oklch(0.7 0.08 140);
+  --wedding-sage-dark: oklch(0.55 0.1 140);
+  --wedding-burgundy: oklch(0.45 0.15 20);
+  --wedding-text: oklch(0.35 0.12 20);
+  --wedding-text-muted: oklch(0.5 0.08 20);
+  --wedding-bg: oklch(0.98 0.01 90);
+  --wedding-card-bg: oklch(0.99 0.005 90);
+  --wedding-border: oklch(0.88 0.04 85);
+}
+
+.dark {
+  /* Wedding Color Palette - Dark Mode */
+  --wedding-blush: oklch(0.35 0.06 10);
+  --wedding-rose: oklch(0.45 0.12 10);
+  --wedding-gold: oklch(0.7 0.14 85);
+  --wedding-gold-dark: oklch(0.55 0.12 85);
+  --wedding-cream: oklch(0.18 0.01 90);
+  --wedding-ivory: oklch(0.22 0.02 90);
+  --wedding-sage: oklch(0.5 0.08 140);
+  --wedding-sage-dark: oklch(0.4 0.08 140);
+  --wedding-burgundy: oklch(0.7 0.12 10);
+  --wedding-text: oklch(0.92 0.02 90);
+  --wedding-text-muted: oklch(0.7 0.02 90);
+  --wedding-bg: oklch(0.15 0.01 90);
+  --wedding-card-bg: oklch(0.2 0.01 90);
+  --wedding-border: oklch(0.35 0.04 85);
+}
+
+@theme inline {
+  --color-wedding-blush: var(--wedding-blush);
+  --color-wedding-rose: var(--wedding-rose);
+  --color-wedding-gold: var(--wedding-gold);
+  --color-wedding-gold-dark: var(--wedding-gold-dark);
+  --color-wedding-cream: var(--wedding-cream);
+  --color-wedding-ivory: var(--wedding-ivory);
+  --color-wedding-sage: var(--wedding-sage);
+  --color-wedding-sage-dark: var(--wedding-sage-dark);
+  --color-wedding-burgundy: var(--wedding-burgundy);
+  --color-wedding-text: var(--wedding-text);
+  --color-wedding-text-muted: var(--wedding-text-muted);
+  --color-wedding-bg: var(--wedding-bg);
+  --color-wedding-card-bg: var(--wedding-card-bg);
+  --color-wedding-border: var(--wedding-border);
+
+  /* Wedding Fonts */
+  --font-script: "Great Vibes", cursive;
+  --font-serif: "Cormorant Garamond", serif;
+}
+
+/* Font Utility Classes */
+.font-script {
+  font-family: var(--font-script);
+}
+
+.font-serif {
+  font-family: var(--font-serif);
+}
+
+/* Paper texture background */
+.paper-texture {
+  background-color: var(--wedding-cream);
+  background-image:
+    url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.8' numOctaves='4' stitchTiles='stitch'/%3E%3CfeColorMatrix type='saturate' values='0'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)'/%3E%3C/svg%3E");
+  background-blend-mode: multiply;
+}
+
+/* Wax seal styles */
+.wax-seal {
+  filter: drop-shadow(0 4px 8px rgba(0, 0, 0, 0.3));
+  cursor: pointer;
+  transition: transform 0.3s ease;
+}
+
+.wax-seal:hover {
+  transform: scale(1.05);
+}
+
+/* Envelope opening animation perspective */
+.envelope-perspective {
+  perspective: 1000px;
+  transform-style: preserve-3d;
+}
+
+/* Invitation card shadow */
+.invitation-shadow {
+  box-shadow:
+    0 4px 6px -1px rgba(0, 0, 0, 0.1),
+    0 2px 4px -2px rgba(0, 0, 0, 0.1),
+    0 20px 25px -5px rgba(0, 0, 0, 0.1),
+    0 8px 10px -6px rgba(0, 0, 0, 0.1);
+}

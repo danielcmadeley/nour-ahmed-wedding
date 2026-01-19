@@ -1,6 +1,6 @@
+import { useRegisterSW } from "virtual:pwa-register/react";
 import { DownloadIcon, XIcon } from "lucide-react";
 import { useEffect, useState } from "react";
-import { useRegisterSW } from "virtual:pwa-register/react";
 import { Button } from "@/src/components/ui/button";
 
 export function PWAPrompt() {

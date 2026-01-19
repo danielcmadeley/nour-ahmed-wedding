@@ -11,12 +11,12 @@ import {
 	AlertDialogTrigger,
 } from "@/src/components/ui/alert-dialog";
 import { Button } from "@/src/components/ui/button";
-import type { GalleryImage } from "@/src/types/gallery";
 import {
 	downloadImage,
 	downloadImagesAsZip,
 	getFilenameFromUrl,
 } from "@/src/lib/utils/download";
+import type { GalleryImage } from "@/src/types/gallery";
 
 interface GalleryToolbarProps {
 	selectedKeys: Set<string>;
